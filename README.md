@@ -1,6 +1,6 @@
 # Devops and Docker
-
-## Exercise 1.1
+## Part 1
+### Exercise 1.1
 ```
 $ docker ps -a
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES
@@ -9,20 +9,20 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 e1e24b37a902        nginx               "nginx -g 'daemon of…"   46 seconds ago      Up 43 seconds               80/tcp              nervous_hellman
 
 ```
-## Exercise 1.2
+### Exercise 1.2
 ```
 $ docker ps -a
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 $ docker images
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
 ```
-## Exercise 1.3
+### Exercise 1.3
 ```
 Give me the password: basics
 You found the correct password. Secret message is:
 "This is the secret message"
 ```
-## Exercise 1.4
+### Exercise 1.4
 ```
 $ docker run -d --rm -it devopsdockeruh/exec_bash_exercise
 1920084f0091d538541fa7133aa58babd9a92821595d0311361ced4fa5c62ee3
@@ -36,11 +36,11 @@ Mon, 13 Jan 2020 14:20:47 GMT
 Secret message is:
 "Docker is easy"
 ```
-## Exercise 1.5
+### Exercise 1.5
 ```
 $ docker run -it ubuntu:latest sh -c 'apt update -y;apt install curl -y;echo "Input website:"; read website; echo "Searching.."; sleep 1; curl http://$website;'
 ```
-## Exercise 1.6
+### Exercise 1.6
 Dockerfile:
 ```
 FROM devopsdockeruh/overwrite_cmd_exercise
@@ -53,7 +53,7 @@ Commands:
 $ docker build -t docker-clock .
 $ docker run docker-clock
 ```
-## Exercise 1.7
+### Exercise 1.7
 Dockerfile:
 ```
 FROM ubuntu:latest
@@ -92,7 +92,7 @@ Searching..
 <p>The document has moved <a href="http://www.helsinki.fi/">here</a>.</p>
 </body></html>
 ```
-## Exercise 1.8
+### Exercise 1.8
 commands:
 ```
 $ touch logs.txt
@@ -108,12 +108,12 @@ Mon, 13 Jan 2020 18:34:24 GMT
 Secret message is:
 "Volume bind mount is easy"
 ```
-## Exercise 1.9
+### Exercise 1.9
 commands:
 ```
-docker run -p 80:80 devopsdockeruh/ports_exercise
+$ docker run -p 80:80 devopsdockeruh/ports_exercise
 ```
-## Exercise 1.10
+### Exercise 1.10
 Dockerfile:
 ```
 FROM ubuntu:latest
@@ -133,7 +133,7 @@ EXPOSE 5000
 
 CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
-## Exercise 1.11
+### Exercise 1.11
 Dockerfile:
 ```
 FROM ubuntu:latest
@@ -157,7 +157,7 @@ commands:
 $ touch logs.txt
 $ docker run -v ${PWD}/logs.txt:/usr/app/logs.txt -p 8000:8000 kurkkumopo-backend
 ```
-## Exercise 1.12
+### Exercise 1.12
 Backend Dockerfile:
 ```
 FROM ubuntu:latest
@@ -204,7 +204,7 @@ $ docker run -p 5000:5000 kurkku-frontti
 $ docker build -t kurkku-bakki .
 $ docker run -p 8000:8000 kurkku-bakki
 ```
-## Exercise 1.13
+### Exercise 1.13
 Commands:
 ```
 $ docker build -t java .
@@ -222,7 +222,7 @@ EXPOSE 8080
 
 CMD ["java", "-jar", "./target/docker-example-1.1.3.jar"]
 ```
-## Exercise 1.14
+### Exercise 1.14
 Dockerfile:
 ```
 FROM ruby:2.6.0
@@ -248,7 +248,7 @@ Commands:
 $ docker build -t rails .
 $ docker run -p 3000:3000 rails
 ```
-## Exercise 1.15
+### Exercise 1.15
 DockerHub repo: https://hub.docker.com/repository/docker/ovatsia/sdxmenuv2
 
 Dockerfile:
@@ -265,10 +265,10 @@ ENV FLASK_ENV developement
 EXPOSE 5000
 CMD ["flask", "run", "--host=0.0.0.0"]
 ```
-## Exercise 1.16
+### Exercise 1.16
 Application in heroku: https://oispakaljaaaaa.herokuapp.com/
 
-## Exercise 1.17
+### Exercise 1.17
 Dockerfile:
 ```
 FROM debian:latest
@@ -309,3 +309,309 @@ Command line interfaces to IBM Cloud / AWS are used as-is from
 command line.
 
 Docker Hub repository: ovatsia/nodenclouds
+
+## Part 2
+Exercises for part 2
+
+### Exercise 2.1
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+
+  first_volume_exercise: 
+    image: devopsdockeruh/first_volume_exercise
+    volumes: 
+    - ./logs.txt:/usr/app/logs.txt
+    container_name: first_volume_exercise
+
+```
+### Exercise 2.2
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+
+  app: 
+    image: devopsdockeruh/ports_exercise
+    ports: 
+     - "80:80"
+    container_name: ports_exercise
+
+```
+### Exercise 2.3
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+  backend: 
+    image: kurkku-backend
+    build: ./back
+    ports: 
+     - "8000:8000"
+    container_name: kurkku-backend
+  frontend: 
+    image: kurkku-frontend
+    build: ./front
+    ports: 
+     - "5000:5000"
+    container_name: kurkku-frontend
+
+```
+### Exercise 2.4
+command: `docker-compose up --scale compute=2`
+### Exercise 2.5
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+  backend: 
+    image: kurkku-backend
+    build: ./back
+    ports: 
+     - "8000:8000"
+    container_name: kurkku-backend
+    environment:
+     - REDIS=database
+     - REDIS_PORT=6379
+  frontend: 
+    image: kurkku-frontend
+    build: ./front
+    ports: 
+     - "5000:5000"
+    container_name: kurkku-frontend
+  database:
+    image: redis:latest
+    ports:
+    - "6379:6379"
+```
+### Exercise 2.6
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+
+  backend: 
+    image: kurkku-backend
+    build: ./back
+    ports: 
+     - "8000:8000"
+    container_name: kurkku-backend
+    environment:
+    - REDIS=database
+    - REDIS_PORT=6379
+    - DB_USERNAME=juuseri
+    - DB_PASSWORD=passu
+    - DB_NAME=daattabaasi
+    - DB_HOST=postgres
+  frontend: 
+    image: kurkku-frontend
+    build: ./front
+    ports: 
+     - "5000:5000"
+    container_name: kurkku-frontend
+  database:
+    image: redis:latest
+    ports:
+    - "6379:6379"
+  postgres:
+    image: postgres:latest
+    ports:
+    - "3306:3306"
+    environment:
+    - POSTGRES_PASSWORD=passu
+    - POSTGRES_USER=juuseri
+    - POSTGRES_DB=daattabaasi
+```
+
+### Exercise 2.7
+docker-compose.yml:
+```
+version: '3.5' 
+
+services:
+  backend:
+    build: ml-kurkkumopo-backend
+    ports:
+     - 5000:5000
+    volumes:
+     - data:/src/model
+  frontend:
+    build: ml-kurkkumopo-frontend
+    ports:
+     - 3000:3000
+  training:
+    build: ml-kurkkumopo-training
+    volumes:
+     - data:/src/model
+     - images:/src/imgs
+volumes:
+  data:
+  images:
+```
+### Exercise 2.8
+nginx.conf:
+```
+events { worker_connections 1024; }
+
+http {
+  server {
+    listen 80;
+
+    location / {
+      proxy_pass http://frontend:5000/;
+    }
+
+    location /api/ {
+      proxy_pass http://backend:8000/;
+    }
+  }
+}
+```
+
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+  proxy:
+    image: nginx:latest
+    ports: 
+     - "80:80"
+    volumes:
+     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+     - backend
+     - frontend
+  backend: 
+    image: kurkku-backend
+    build: ./back
+    ports: 
+     - "8000:8000"
+    container_name: kurkku-backend
+    environment:
+     - DB_USERNAME=juuseri
+     - DB_PASSWORD=passu
+     - DB_NAME=daattabaasi
+     - DB_HOST=postgres
+     - FRONT_URL=http://localhost
+  frontend: 
+    image: kurkku-frontend
+    build: ./front
+    ports: 
+     - "5000:5000"
+    container_name: kurkku-frontend
+    environment:
+     - API_URL=http://localhost/api
+  postgres:
+    image: postgres:latest
+    ports:
+    - "3306:3306"
+    environment:
+    - POSTGRES_PASSWORD=passu
+    - POSTGRES_USER=juuseri
+    - POSTGRES_DB=daattabaasi
+```
+### Exercise 2.9
+docker-compose.yml:
+```
+version: '3.5' 
+
+services: 
+    proxy:
+      image: nginx:latest
+      ports: 
+       - "80:80"
+      volumes:
+       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      depends_on:
+       - backend
+       - frontend
+    backend: 
+      image: kurkku-backend
+      build: ./back
+      ports: 
+       - "8000:8000"
+      container_name: kurkku-backend
+      environment:
+       - REDIS=database
+       - REDIS_PORT=6379
+       - DB_USERNAME=juuseri
+       - DB_PASSWORD=passu
+       - DB_NAME=daattabaasi
+       - DB_HOST=postgres
+       - FRONT_URL=http://localhost
+      depends_on:
+       - postgres
+       - database
+    frontend: 
+      image: kurkku-frontend
+      build: ./front
+      ports: 
+       - "5000:5000"
+      container_name: kurkku-frontend
+      environment:
+        - API_URL=http://localhost/api
+    postgres:
+      image: postgres:latest
+      ports:
+      - "3306:3306"
+      environment:
+        - POSTGRES_PASSWORD=passu
+        - POSTGRES_USER=juuseri
+        - POSTGRES_DB=daattabaasi
+      volumes:
+       - ./database:/var/lib/postgresql/data
+    database:
+      image: redis:latest
+      ports:
+      - "6379:6379"
+      volumes:
+      - ./redis-data:/data
+      command: ["redis-server", "--appendonly", "yes"]
+```
+### Exercise 2.10
+docker-compose.yml is the same as in the previous exercise.
+
+Backend Dockerfile:
+```
+FROM ubuntu:latest
+
+WORKDIR /usr/app
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install curl -y
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+COPY backend-example-docker/ .
+RUN npm install
+EXPOSE 8000
+
+CMD ["npm", "start"]
+```
+
+Frontend Dockerfile:
+```
+FROM ubuntu:latest
+
+WORKDIR /usr/app
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install curl -y
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+COPY frontend-example-docker/ .
+ENV API_URL=/api
+RUN npm install
+RUN npm install -g serve
+RUN npm run build
+
+EXPOSE 5000
+
+CMD ["serve", "-s", "-l", "5000", "dist"]
+```
