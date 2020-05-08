@@ -617,7 +617,7 @@ CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
 
 ## Part 3
-### Excercise 3.1
+### Exercise 3.1
 Before optimizing:
 ```
 $ docker history kurkku-backend
@@ -696,9 +696,50 @@ e8afda9b790a        2 minutes ago       /bin/sh -c #(nop) COPY dir:e4de8effde825
 TOTAL: 383MB
 ```
 
-### Excercise 3.2
-### Excercise 3.3
-### Excercise 3.4
+### Exercise 3.2
+skipped `:)`
+
+### Exercise 3.3
+Commands for building and running container:
+`docker build -t deplo .`
+`docker run -v /var/run/docker.sock:/var/run/docker.sock -it deplo`
+
+Dockerfile:
+```
+FROM alpine:latest
+
+
+WORKDIR /app
+COPY ./ .
+ENV APP_NAME=application_name
+ENV DOCKER_USERNAME=docker_username
+ENV DOCKER_PASSWORD=docker_password
+ENV GIT_URL=https://github.com/johndoe/project.git
+RUN chmod +x /app/deploy.sh
+RUN apk add git && apk add docker
+
+ENTRYPOINT ["/app/deploy.sh"]
+```
+
+Shell script:
+```
+#!/bin/sh
+
+if [ -z "$APP_NAME" ]; then echo "APP_NAME missing!!!"; exit 1; fi
+if [ -z "$DOCKER_USERNAME" ]; then echo "DOCKER_USERNAME missing!!!"; exit 1; fi
+if [ -z "$DOCKER_PASSWORD" ]; then echo "DOCKER_PASSWORD missing!!!"; exit 1; fi
+if [ -z "$GIT_URL" ]; then echo "GIT_URL missing!!!"; exit 1; fi
+
+git clone $GIT_URL $PWD/code
+
+docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+docker build -t $DOCKER_USERNAME/$APP_NAME:latest $PWD/code/
+docker push $DOCKER_USERNAME/$APP_NAME:latest
+
+exit 0
+```
+
+### Exercise 3.4
 Backend Dockerfile:
 ```
 FROM ubuntu:latest
@@ -733,7 +774,7 @@ EXPOSE 5000
 
 CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
-### Excercise 3.5
+### Exercise 3.5
 Results:
 
 Before optimization:
@@ -840,7 +881,7 @@ EXPOSE 5000
 CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
 
-### Excercise 3.6
+### Exercise 3.6
 Dockerfile:
 ```
 FROM node:alpine as build-stage
@@ -858,7 +899,7 @@ EXPOSE 5000
 CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
 
-### Excercise 3.7
+### Exercise 3.7
 
 Old Dockerfile:
 ```
@@ -891,3 +932,5 @@ USER appuser
 EXPOSE 3000
 CMD ["rails", "s", "-e", "production"]
 ```
+
+## Exercise 3.8
