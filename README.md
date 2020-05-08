@@ -615,3 +615,90 @@ EXPOSE 5000
 
 CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
+
+## Part 3
+### Excercise 3.1
+Before optimizing:
+```
+$ docker history kurkku-backend
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+aa0140370389        2 minutes ago       /bin/sh -c #(nop)  CMD ["npm" "start"]          0B
+94cf323373db        2 minutes ago       /bin/sh -c #(nop)  ENV FRONT_URL=http://loca…   0B
+bd9885f26f76        2 minutes ago       /bin/sh -c #(nop)  EXPOSE 8000                  0B
+59575d5fd2f0        2 minutes ago       /bin/sh -c npm install                          58.4MB
+665ea87280f4        2 minutes ago       /bin/sh -c #(nop) COPY dir:19a1ed09519035ff1…   581kB
+3a5e3ca880f1        2 minutes ago       /bin/sh -c apt install -y nodejs                86.6MB
+ba9bf964de6a        2 minutes ago       /bin/sh -c curl -sL https://deb.nodesource.c…   34.9MB
+e34e4c1dbc6a        3 minutes ago       /bin/sh -c apt-get install curl -y              14.3MB
+f6a539e4d95d        3 minutes ago       /bin/sh -c apt-get upgrade -y                   3.08MB
+333594e0c625        4 minutes ago       /bin/sh -c apt-get update                       27.8MB
+02d8476cc04b        4 minutes ago       /bin/sh -c #(nop) WORKDIR /usr/app              0B
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB
+TOTAL: 290MB
+
+$ docker history kurkku-frontend
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+29b7a2d6c09d        2 minutes ago       /bin/sh -c #(nop)  CMD ["serve" "-s" "-l" "5…   0B
+d0f45ff7f12f        2 minutes ago       /bin/sh -c #(nop)  EXPOSE 5000                  0B
+538c331fd750        2 minutes ago       /bin/sh -c npm run build                        26.9MB
+2bd70b9dae9a        2 minutes ago       /bin/sh -c npm install -g serve                 5.45MB
+add555956ae8        2 minutes ago       /bin/sh -c npm install                          154MB
+2022cca69b1b        3 minutes ago       /bin/sh -c #(nop)  ENV API_URL=http://localh…   0B
+e54f5fcfe180        3 minutes ago       /bin/sh -c #(nop) COPY dir:45abe52d3482a1179…   574kB
+3a5e3ca880f1        3 minutes ago       /bin/sh -c apt install -y nodejs                86.6MB
+ba9bf964de6a        4 minutes ago       /bin/sh -c curl -sL https://deb.nodesource.c…   34.9MB
+e34e4c1dbc6a        4 minutes ago       /bin/sh -c apt-get install curl -y              14.3MB
+f6a539e4d95d        5 minutes ago       /bin/sh -c apt-get upgrade -y                   3.08MB
+333594e0c625        5 minutes ago       /bin/sh -c apt-get update                       27.8MB
+02d8476cc04b        5 minutes ago       /bin/sh -c #(nop) WORKDIR /usr/app              0B
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB
+TOTAL: 418MB
+```
+
+After optimizing:
+```
+$ docker history kurkku-backend
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+fafd21d4dfba        2 minutes ago       /bin/sh -c #(nop)  CMD ["npm" "start"]          0B
+5c737ad1c0ad        2 minutes ago       /bin/sh -c #(nop)  ENV FRONT_URL=http://loca…   0B
+56d59ebf8742        2 minutes ago       /bin/sh -c #(nop)  EXPOSE 8000                  0B
+08f1fdbc0148        2 minutes ago       /bin/sh -c apt-get update &&     apt-get ins…   190MB
+e619d632b47e        9 minutes ago       /bin/sh -c #(nop) COPY dir:ab4ea87b075f7d6c8…   581kB
+257313d58660        9 minutes ago       /bin/sh -c #(nop) WORKDIR /app                  0B
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB
+TOTAL: 255MB
+
+$ docker history kurkku-frontend
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+a420cad27972        23 seconds ago      /bin/sh -c #(nop)  CMD ["serve" "-s" "-l" "5…   0B
+32d00c5d7d3d        25 seconds ago      /bin/sh -c #(nop)  EXPOSE 5000                  0B
+80127b07a454        30 seconds ago      /bin/sh -c apt-get update && apt-get install…   318MB
+cb746cabd9ef        2 minutes ago       /bin/sh -c #(nop)  ENV API_URL=http://localh…   0B
+e8afda9b790a        2 minutes ago       /bin/sh -c #(nop) COPY dir:e4de8effde8253d65…   574kB
+257313d58660        17 minutes ago      /bin/sh -c #(nop) WORKDIR /app                  0B
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB
+TOTAL: 383MB
+```
+
+### Excercise 3.2
+### Excercise 3.3
+### Excercise 3.4
+### Excercise 3.5
+### Excercise 3.6
+### Excercise 3.7
