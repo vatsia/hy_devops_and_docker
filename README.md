@@ -699,6 +699,146 @@ TOTAL: 383MB
 ### Excercise 3.2
 ### Excercise 3.3
 ### Excercise 3.4
+Backend Dockerfile:
+```
+FROM ubuntu:latest
+
+WORKDIR /app
+COPY backend-example-docker/ /app
+RUN apt-get update && \
+    apt-get install curl ca-certificates -y && curl -sL https://deb.nodesource.com/setup_10.x | bash && \
+    apt install -y nodejs && npm install && apt-get purge -y --auto-remove curl && rm -rf /var/lib/apt/lists/* && \
+    useradd -m app && chown -R app /app
+USER app
+EXPOSE 8000
+ENV FRONT_URL=http://localhost:5000
+CMD ["npm", "start"]
+```
+
+Frontend Dockerfile:
+```
+FROM ubuntu:latest
+
+WORKDIR /app
+COPY frontend-example-docker/ /app
+ENV API_URL=http://localhost:8000
+
+RUN apt-get update && apt-get install curl ca-certificates -y && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash && apt install -y nodejs && \
+    npm install && npm install -g serve && npm run build && \
+    apt-get purge -y --auto-remove curl && rm -rf /var/lib/apt/lists/* && \
+    useradd -m app && chown -R app /app
+USER app
+EXPOSE 5000
+
+CMD ["serve", "-s", "-l", "5000", "dist"]
+```
 ### Excercise 3.5
+Results:
+
+Before optimization:
+```
+$ docker history back
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+fafd21d4dfba        2 minutes ago       /bin/sh -c #(nop)  CMD ["npm" "start"]          0B                  
+5c737ad1c0ad        2 minutes ago       /bin/sh -c #(nop)  ENV FRONT_URL=http://loca…   0B                  
+56d59ebf8742        2 minutes ago       /bin/sh -c #(nop)  EXPOSE 8000                  0B                  
+08f1fdbc0148        2 minutes ago       /bin/sh -c apt-get update &&     apt-get ins…   190MB               
+e619d632b47e        9 minutes ago       /bin/sh -c #(nop) COPY dir:ab4ea87b075f7d6c8…   581kB               
+257313d58660        9 minutes ago       /bin/sh -c #(nop) WORKDIR /app                  0B                  
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                  
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B                  
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B                
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB               
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB              
+TOTAL: 255MB
+
+$ docker history front
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+a420cad27972        23 seconds ago      /bin/sh -c #(nop)  CMD ["serve" "-s" "-l" "5…   0B                  
+32d00c5d7d3d        25 seconds ago      /bin/sh -c #(nop)  EXPOSE 5000                  0B                  
+80127b07a454        30 seconds ago      /bin/sh -c apt-get update && apt-get install…   318MB               
+cb746cabd9ef        2 minutes ago       /bin/sh -c #(nop)  ENV API_URL=http://localh…   0B                  
+e8afda9b790a        2 minutes ago       /bin/sh -c #(nop) COPY dir:e4de8effde8253d65…   574kB               
+257313d58660        17 minutes ago      /bin/sh -c #(nop) WORKDIR /app                  0B                  
+549b9b86cb8d        3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                  
+<missing>           3 weeks ago         /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B                  
+<missing>           3 weeks ago         /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   745B                
+<missing>           3 weeks ago         /bin/sh -c [ -z "$(apt-get indextargets)" ]     987kB               
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:53f100793e6c0adfc…   63.2MB              
+TOTAL: 383MB
+```
+
+After optimization:
+
+```
+$ docker history back
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+4c05de104e82        2 minutes ago       /bin/sh -c #(nop)  CMD ["npm" "start"]          0B                  
+75faa0cd5f7f        2 minutes ago       /bin/sh -c #(nop)  ENV FRONT_URL=http://loca…   0B                  
+9ad800ceb199        2 minutes ago       /bin/sh -c #(nop)  EXPOSE 8000                  0B                  
+fd56fe793203        2 minutes ago       /bin/sh -c #(nop)  USER app                     0B                  
+2902cd58ceac        2 minutes ago       /bin/sh -c npm install && adduser -SD app &&…   58.8MB              
+1a057de40b0f        3 minutes ago       /bin/sh -c #(nop) COPY dir:ab4ea87b075f7d6c8…   581kB               
+3ca9f58513fb        11 minutes ago      /bin/sh -c #(nop) WORKDIR /app                  0B                  
+364fb8e7f28a        6 days ago          /bin/sh -c #(nop)  CMD ["node"]                 0B                  
+<missing>           6 days ago          /bin/sh -c #(nop)  ENTRYPOINT ["docker-entry…   0B                  
+<missing>           6 days ago          /bin/sh -c #(nop) COPY file:238737301d473041…   116B                
+<missing>           6 days ago          /bin/sh -c apk add --no-cache --virtual .bui…   5.35MB              
+<missing>           6 days ago          /bin/sh -c #(nop)  ENV YARN_VERSION=1.21.1      0B                  
+<missing>           6 days ago          /bin/sh -c addgroup -g 1000 node     && addu…   102MB               
+<missing>           6 days ago          /bin/sh -c #(nop)  ENV NODE_VERSION=13.6.0      0B                  
+<missing>           3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:36fdc8cb08228a870…   5.59MB              
+TOTAL: 172MB
+
+$ docker history front
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+16cc67f50435        7 minutes ago       /bin/sh -c #(nop)  CMD ["serve" "-s" "-l" "5…   0B                  
+1ed7803628c4        7 minutes ago       /bin/sh -c #(nop)  EXPOSE 5000                  0B                  
+f0fe830feab6        7 minutes ago       /bin/sh -c #(nop)  USER app                     0B                  
+c111453ecfc3        7 minutes ago       /bin/sh -c npm install && npm install -g ser…   184MB               
+aad982ba6b51        14 minutes ago      /bin/sh -c #(nop)  ENV API_URL=http://localh…   0B                  
+d67f75ac056e        14 minutes ago      /bin/sh -c #(nop) COPY dir:e4de8effde8253d65…   574kB               
+3ca9f58513fb        14 minutes ago      /bin/sh -c #(nop) WORKDIR /app                  0B                  
+364fb8e7f28a        6 days ago          /bin/sh -c #(nop)  CMD ["node"]                 0B                  
+<missing>           6 days ago          /bin/sh -c #(nop)  ENTRYPOINT ["docker-entry…   0B                  
+<missing>           6 days ago          /bin/sh -c #(nop) COPY file:238737301d473041…   116B                
+<missing>           6 days ago          /bin/sh -c apk add --no-cache --virtual .bui…   5.35MB              
+<missing>           6 days ago          /bin/sh -c #(nop)  ENV YARN_VERSION=1.21.1      0B                  
+<missing>           6 days ago          /bin/sh -c addgroup -g 1000 node     && addu…   102MB               
+<missing>           6 days ago          /bin/sh -c #(nop)  ENV NODE_VERSION=13.6.0      0B                  
+<missing>           3 weeks ago         /bin/sh -c #(nop)  CMD ["/bin/sh"]              0B                  
+<missing>           3 weeks ago         /bin/sh -c #(nop) ADD file:36fdc8cb08228a870…   5.59MB              
+TOTAL: 297MB
+```
+
+Dockerfiles:
+Backend Dockerfile:
+```
+FROM node:alpine
+WORKDIR /app
+COPY backend-example-docker/ /app
+RUN npm install && adduser -SD app && chown -R app /app 
+USER app
+EXPOSE 8000
+ENV FRONT_URL=http://localhost:5000
+CMD ["npm", "start"]
+```
+
+Frontend Dockerfile:
+```
+FROM node:alpine
+WORKDIR /app
+COPY frontend-example-docker/ /app
+ENV API_URL=http://localhost:8000
+
+RUN npm install && npm install -g serve && npm run build && adduser -SD app && chown -R app /app
+USER app
+EXPOSE 5000
+
+CMD ["serve", "-s", "-l", "5000", "dist"]
+```
+
 ### Excercise 3.6
 ### Excercise 3.7
