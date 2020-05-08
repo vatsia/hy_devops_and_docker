@@ -841,4 +841,53 @@ CMD ["serve", "-s", "-l", "5000", "dist"]
 ```
 
 ### Excercise 3.6
+Dockerfile:
+```
+FROM node:alpine as build-stage
+WORKDIR /app
+COPY frontend-example-docker/ /app
+ENV API_URL=http://localhost:8000
+RUN npm install && npm run build 
+
+FROM node:alpine
+WORKDIR /app
+COPY --from=build-stage /app/dist /app/dist
+RUN npm install -g serve && adduser -SD app && chown -R app /app
+USER app
+EXPOSE 5000
+CMD ["serve", "-s", "-l", "5000", "dist"]
+```
+
 ### Excercise 3.7
+
+Old Dockerfile:
+```
+FROM ruby:2.6.0
+WORKDIR /usr/app/
+COPY rails-example-project/ .
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt install -y nodejs
+RUN gem install bundler
+RUN bundle install
+ENV SECRET_KEY_BASE secret
+RUN rails db:migrate RAILS_ENV=production
+RUN rake assets:precompile
+
+EXPOSE 3000
+
+ENV RAILS_LOG_TO_STDOUT=true
+
+CMD ["rails", "s", "-e", "production"]
+```
+
+Optimized Dockerfile:
+```
+FROM ruby:2.6.0-alpine
+WORKDIR /app/
+COPY rails-example-project/ .
+ENV SECRET_KEY_BASE secret
+RUN apk add ruby-dev alpine-sdk tzdata nodejs gcc libffi-dev make sqlite-dev && gem install tzinfo-data bundler && bundle lock --add-platform x86-mingw32 x86-mswin32 x64-mingw32 java && bundle install && rails db:migrate RAILS_ENV=production && rake assets:precompile && adduser -DS appuser && chown -R appuser /app
+USER appuser
+EXPOSE 3000
+CMD ["rails", "s", "-e", "production"]
+```
